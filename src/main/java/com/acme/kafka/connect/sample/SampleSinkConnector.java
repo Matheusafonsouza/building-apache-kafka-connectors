@@ -4,29 +4,25 @@ import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Importance;
 import org.apache.kafka.common.config.ConfigDef.Type;
-import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.common.utils.AppInfoParser;
 import org.apache.kafka.connect.connector.Task;
-import org.apache.kafka.connect.source.SourceConnector;
+import org.apache.kafka.connect.sink.SinkConnector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SampleSourceConnector extends SourceConnector {
+public class SampleSinkConnector extends SinkConnector {
+
     public static final String FIRST_PARAMETER = "first.required.param";
     public static final String SECOND_PARAMETER = "second.required.param";
-    public static final String TOPIC_CONFIG = "topic";
-
     private static final ConfigDef CONFIG_DEF = new ConfigDef()
         .define(FIRST_PARAMETER, Type.STRING, null, Importance.HIGH, "First required parameter")
-        .define(SECOND_PARAMETER, Type.STRING, null, Importance.HIGH, "Second required parameter")
-        .define(TOPIC_CONFIG, Type.LIST, Importance.HIGH, "The topic to publish data to");
+        .define(SECOND_PARAMETER, Type.STRING, null, Importance.HIGH, "Second required parameter");
 
     private String firstParameter;
     private String secondParameter;
-    private String topic;
 
     @Override
     public String version() {
@@ -38,16 +34,11 @@ public class SampleSourceConnector extends SourceConnector {
         AbstractConfig parsedConfig = new AbstractConfig(CONFIG_DEF, props);
         firstParameter = parsedConfig.getString(FIRST_PARAMETER);
         secondParameter = parsedConfig.getString(SECOND_PARAMETER);
-        List<String> topics = parsedConfig.getList(TOPIC_CONFIG);
-        if (topics.size() != 1) {
-            throw new ConfigException("'topic' in SampleSourceConnector configuration requires definition of a single topic");
-        }
-        topic = topics.get(0);
     }
 
     @Override
     public Class<? extends Task> taskClass() {
-        return SampleSourceTask.class;
+        return SampleSinkTask.class;
     }
 
     @Override
@@ -56,14 +47,13 @@ public class SampleSourceConnector extends SourceConnector {
         Map<String, String> config = new HashMap<>();
         config.put(FIRST_PARAMETER, firstParameter);
         config.put(SECOND_PARAMETER, secondParameter);
-        config.put(TOPIC_CONFIG, topic);
         configs.add(config);
         return configs;
     }
 
     @Override
     public void stop() {
-        // Nothing to do since SampleSourceConnector has no background monitoring.
+        // Nothing to do since SampleSinkConnector has no background monitoring.
     }
 
     @Override

@@ -1,57 +1,37 @@
 package com.acme.kafka.connect.sample;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
 
-import static com.acme.kafka.connect.sample.SampleSourceConnectorConfig.*;
-
 public class SampleSourceTask extends SourceTask {
 
-    private static Logger log = LoggerFactory.getLogger(SampleSourceTask.class);
-
-    private SampleSourceConnectorConfig config;
-    private int monitorThreadTimeout;
-    private List<String> sources;
+    private String topic = null;
+    private String firstParameter = null;
+    private String secondParameter = null;
 
     @Override
     public String version() {
-        return PropertiesUtil.getConnectorVersion();
+        return new SampleSourceConnector().version();
     }
 
     @Override
-    public void start(Map<String, String> properties) {
-        config = new SampleSourceConnectorConfig(properties);
-        monitorThreadTimeout = config.getInt(MONITOR_THREAD_TIMEOUT_CONFIG);
-        String sourcesStr = properties.get("sources");
-        sources = Arrays.asList(sourcesStr.split(","));
+    public void start(Map<String, String> props) {
+        topic = props.get(SampleSourceConnector.TOPIC_CONFIG);
+        firstParameter = props.get(SampleSourceConnector.FIRST_PARAMETER);
+        secondParameter = props.get(SampleSourceConnector.SECOND_PARAMETER);
     }
 
     @Override
     public List<SourceRecord> poll() throws InterruptedException {
-        Thread.sleep(monitorThreadTimeout / 2);
-        List<SourceRecord> records = new ArrayList<>();
-        for (String source : sources) {
-            log.info("Polling data from the source '" + source + "'");
-            records.add(new SourceRecord(
-                Collections.singletonMap("source", source),
-                Collections.singletonMap("offset", 0),
-                source, null, null, null, Schema.BYTES_SCHEMA,
-                String.format("Data from %s", source).getBytes()));
-        }
-        return records;
+        return null;
     }
 
     @Override
     public void stop() {
+        // Nothing to do since SampleSourceConnector has no background monitoring.
     }
 
 }
